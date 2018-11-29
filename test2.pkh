@@ -1,0 +1,7 @@
+create or replace package test2
+is
+    procedure test1 (
+        p_test11 in varchar2 default null
+    );
+
+end;

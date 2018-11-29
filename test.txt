@@ -1,0 +1,193 @@
+  
+<!DOCTYPE HTML>
+<html lang="ko">
+    <head>
+    <meta charset="UTF-8">
+    <title></title>
+  
+
+    
+        <link rel="stylesheet" type="text/css" media="screen" href="/grid/dhtmlxGrid/codebase/dhtmlxgrid.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/grid/dhtmlxGrid/codebase/dhtmlxgrid_skins.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/include/dbv_eco.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/grid/dhtmlxGrid/codebase/skins/dhtmlxgrid_dhx_skyblue.css" />
+        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxCalendar/codebase/dhtmlxcalendar.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/include/jquery-ui-1.8.9.custom.css" /> 
+
+        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxLayout/codebase/dhtmlxlayout.css">
+        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_skyblue.css">
+        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_web.css">
+        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_blue.css">
+        <script src="/grid/dhtmlxLayout/codebase/dhtmlxcommon.js"></script>
+        <script src="/grid/dhtmlxLayout/codebase/dhtmlxlayout.js"></script>
+        <script src="/grid/dhtmlxLayout/codebase/dhtmlxcontainer.js"></script>
+            
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/dhtmlxcommon.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxCalendar/codebase/dhtmlxcalendar.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/dhtmlxgrid.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/dhtmlxgridcell.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_json.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_mcol.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_hmenu.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_splt.js"></script>    
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_drag.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_keymap_access.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/excells/dhtmlxgrid_excell_link.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_rowspan.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_filter.js"></script>
+        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/excells/dhtmlxgrid_excell_dhxcalendar.js"></script>
+
+        <script type="text/javascript" src="/include/jquery-latest.min.js"></script>   
+        <script type="text/javascript" src="/include/jquery.form.js"></script>
+        <script type="text/javascript" src="/include/jquery-ui-1.8.9.custom.min.js"></script>
+        <script type="text/javascript" src="/include/jquery.ui.datepicker-ko.js"></script>
+        <script type="text/javascript" id="dym"></script>
+
+    
+    
+    <script>
+    var page = "";
+    var newWnd2 = "";
+    
+    
+    function insertCode() {
+      thisForm = document.forms[0];
+      if (!confirm("저장하시겠습니까?")) return false;
+      thisForm.p_dml_gubun.value = "1";
+      thisForm.submit();
+      
+    }
+    
+    function deleteCode() {
+      thisForm = document.forms[0];
+      if (!confirm("삭제하시겠습니까?")) return false;
+        thisForm.p_dml_gubun.value = "2";
+        thisForm.submit();
+      
+    }
+    
+    function deleteAllCode() {
+      thisForm = document.forms[0];
+      if (!confirm("삭제되었습니다.    ")) return false;
+        thisForm.p_dml_gubun.value = "3";
+        thisForm.submit();
+      
+    }
+    
+    function appendCode() {
+      location.href = "comcatalog.crrec?p_systemcd=FMS&p_catalogcd=PROCESS_CODE";
+    }
+    
+    function manage_item() {
+      thisForm = document.forms[0];
+      
+      var page = "comcatalog.manage_item?p_systemcd="+"FMS"+"&p_catalogcd="+"PROCESS_CODE";
+      dialogprops = "status:no; help:no; resizable:no; edge:Raised; dialogWidth:810px; dialogHeight:500px;";
+      //window.showModalDialog(page, window, dialogprops);
+    
+    newWnd2 = window.open(page,"window","top=100, left=100, status=yes, resizable=no, width=810, height=500");
+    }
+    
+        function copy_(){
+            if(confirm("저장하시겠습니까?")){
+                form1.p_en.value = form1.p_ko.value;
+                form1.p_ch.value = form1.p_ko.value;
+                form1.p_sp.value = form1.p_ko.value;
+            }
+        }
+        
+        function toCopy(objRow1){
+        //var src = objRow1;
+        var src = "get_catalog_name('FMS','"+objRow1+"',common.get_cookie('SYSLANG'), rec."+objRow1+")";
+        
+        if(window.clipboardData){
+      clipboardData.setData("text",src);
+      }else if(window.netscape){
+        netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+        var clip = Components.classes["@mozilla.org/widget/clipboard;1"].createInstance(Components.interfaces.nsIClipboard);
+      if(!clip) return;
+      var trans = Components.classes["@mozilla.org/widget/transferable;1"].createInstance(Components.interfaces.nsITransferable);
+      if(!trans) return;
+      trans.addDataFlavor("text/unicode");
+      var str = new Object(),len = new Object();
+      var str = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString);
+      str.data=src;
+      trans.setTransferData("text/unicode",str,src.length*2);
+      var clipid=Components.interfaces.nsIClipboard;
+      if(!clipid) return false;
+      clip.setData(trans,null,clipid.kGlobalClipboard);
+      }
+        }
+    </script>
+
+  </head>
+
+  <body class="crrec" scroll="auto">
+    <form name="form1" method="post" action="comcatalog.process">    
+      <input type="hidden" name="p_dml_gubun" value="" />
+      
+            <table width="100%">
+                <tr>
+                    <td colspan="5" align="right" height="20" style="border:solid #D6D6D6 1px">
+            <a href="#" class="btn-new buttons" onClick="appendCode();">신규</a>
+            <a href="#" class="btn-save buttons" onClick="insertCode();">저장</a>
+            <a href="#" class="btn-delete buttons" onClick="deleteCode();">삭제</a>
+            <a href="#" class="btn-delete buttons" onClick="deleteAllCode();">전체삭제</a>
+            <a href="#" class="btn-close buttons" onClick="self_close();">닫기</a>
+          </td>
+                </tr>
+                <tr>
+                    <td class="titletd">시스템코드</td>
+                    <td class="inputtd">
+          
+
+          FMS
+            <input type="hidden" name="p_systemcd" value="FMS"/> 
+          
+
+          </td>    
+                    <td width="9"></td>
+                    <td class="titletd">카탈로그코드</td>
+                    <td class="inputtd">
+        
+
+          PROCESS_CODE
+            <input type="hidden" name="p_catalogcd" value="PROCESS_CODE" />
+      
+
+                    <a href="#" onclick="toCopy('PROCESS_CODE')">[G.C.M.]</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="titletd">코드내용</td>
+                    <td class="inputtd" colspan="4"><input type="text" name="p_descr" class="txtbox2" value="FMS 설비마스터 : 공정" /></td>
+                </tr>
+                <tr>
+                    <td class="titletd">코드</td>
+                    <td class="inputtd"><input type="text" name="p_listvalue" class="txtbox" value="" /></td>
+                    <td width="9"></td>
+                    <td width="192" class="titletd">순서</td>
+                    <td class="inputtd"><input type="text" name="p_listorder" class="txtbox" value="" /></td>
+                </tr>
+                <tr>
+                    <td class="titletd">한국어</td>
+                    <td class="inputtd" colspan="4"><input type="text" name="p_ko" style="width: 80%" value="" /><a href="#" onclick="copy_(); return false;">Copy</a></td>
+                </tr>
+                <tr>
+                    <td class="titletd">영어</td>
+                    <td class="inputtd" colspan="4"><input type="text" name="p_en" style="width: 98%" value="" /></td>
+                </tr>
+                <tr>
+                    <td class="titletd">중국어</td>
+                    <td class="inputtd" colspan="4"><input type="text" name="p_ch" style="width: 98%" value="" /></td>
+                </tr>
+                <tr>
+                    <td class="titletd">스페인어</td>
+                    <td class="inputtd" colspan="4"><input type="text" name="p_sp" style="width: 98%" value="" /></td>
+                </tr>
+            </table> 
+      <iframe id="c0051List" src="comcatalog.list_catalog?p_systemcd=FMS&p_catalogcd=PROCESS_CODE&p_flag=" frameborder="0" scrolling="no" style="width: 100%; height:450px;"></iframe>
+    </form>
+    </body>
+</html>
+    
