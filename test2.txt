@@ -1,0 +1,5 @@
+ if (!confirm("저장하시겠습니까?")) return false;
+ if (!confirm("'||get_fn('저장하시겠습니까?')||'")) return false;
+ alert("헬로 월드");
+ //아이고 잘 안되네
+ <td>헬 월드인가</td>

@@ -1,193 +1,1166 @@
-  
-<!DOCTYPE HTML>
-<html lang="ko">
-    <head>
-    <meta charset="UTF-8">
-    <title></title>
-  
-
+create or replace PACKAGE BODY         dbv_rc_qms_test
+is 
+  PROCEDURE CONTROL 
+  (
+    p_companycd in varchar2 default common.get_cookie('SYSCOMP'),
+    p_r_yn in varchar2 default null,
+    p_r_system in varchar2 default null,
+    p_r_menu in varchar2 default null,
+    p_r_descr in varchar2 default null,
+    p_r_name  in varchar2 default null
+  )
+  IS 
+   
+    b_save varchar2(500) :=''; 
+    b_search varchar2(500) := '<span class="btn-search buttons" onClick="doQuery(); return false;">조회</span>'; --버튼  
+    b_new varchar2(500) := '<span class="btn-new buttons" onClick="newDoc(); return false;">'||get_fn('신규등록')||'</span>'; --버튼
+     
+  begin  
+    htp.p('
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"> 
+<html> 
+  <head> 
+    <title>'||common.get_cookie('SYSTITLE')||'</title> 
+    <link rel="stylesheet" type="text/css" href="/grid/dhtmlxGrid/samples/common/style.css">
+    <link rel="stylesheet" type="text/css" href="/include/dbv_eco.css">');  
+    dbv_grid. print_env1;
+    dbv_grid. print_env;
+    javascript. js;
+    htp.p('
+    <script  src="/grid/dhtmlxTreeGrid/codebase/dhtmlxtreegrid.js"></script>
+    <script  src="/grid/dhtmlxTreeGrid/codebase/ext/dhtmlxtreegrid_lines.js"></script>
+    <link rel="STYLESHEET" type="text/css" href="/grid/dhtmlxTabbar/codebase/dhtmlxtabbar.css">
+    <script  src="/grid/dhtmlxTabbar/codebase/dhtmlxcommon.js"></script>
+    <script  src="/grid/dhtmlxTabbar/codebase/dhtmlxtabbar.js"></script>
+    <script  src="/grid/dhtmlxTabbar/codebase/dhtmlxtabbar_start.js"></script>
+     
+    <script type="text/javascript"> 
     
-        <link rel="stylesheet" type="text/css" media="screen" href="/grid/dhtmlxGrid/codebase/dhtmlxgrid.css" />
-        <link rel="stylesheet" type="text/css" media="screen" href="/grid/dhtmlxGrid/codebase/dhtmlxgrid_skins.css" />
-        <link rel="stylesheet" type="text/css" media="screen" href="/include/dbv_eco.css" />
-        <link rel="stylesheet" type="text/css" media="screen" href="/grid/dhtmlxGrid/codebase/skins/dhtmlxgrid_dhx_skyblue.css" />
-        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxCalendar/codebase/dhtmlxcalendar.css" />
-        <link rel="stylesheet" type="text/css" media="screen" href="/include/jquery-ui-1.8.9.custom.css" /> 
-
-        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxLayout/codebase/dhtmlxlayout.css">
-        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_skyblue.css">
-        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_web.css">
-        <link rel="stylesheet" type="text/css" href="/grid/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_blue.css">
-        <script src="/grid/dhtmlxLayout/codebase/dhtmlxcommon.js"></script>
-        <script src="/grid/dhtmlxLayout/codebase/dhtmlxlayout.js"></script>
-        <script src="/grid/dhtmlxLayout/codebase/dhtmlxcontainer.js"></script>
+    $(function(){   
+        doOnLoad_T();   
+        doInitGrid();   
+      });
+    
+    var dhxLayout;
+    
+    function doOnLoad_T() 
+    {
+      dhxLayout = new dhtmlXLayoutObject("parentId", "1C");
             
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/dhtmlxcommon.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxCalendar/codebase/dhtmlxcalendar.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/dhtmlxgrid.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/dhtmlxgridcell.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_json.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_mcol.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_hmenu.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_splt.js"></script>    
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_drag.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_keymap_access.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/excells/dhtmlxgrid_excell_link.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_rowspan.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_filter.js"></script>
-        <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/excells/dhtmlxgrid_excell_dhxcalendar.js"></script>
+      dhxLayout.cells("a").hideHeader();
+           
+      //dhxLayout.cells("a").setWidth(290);
 
-        <script type="text/javascript" src="/include/jquery-latest.min.js"></script>   
-        <script type="text/javascript" src="/include/jquery.form.js"></script>
-        <script type="text/javascript" src="/include/jquery-ui-1.8.9.custom.min.js"></script>
-        <script type="text/javascript" src="/include/jquery.ui.datepicker-ko.js"></script>
-        <script type="text/javascript" id="dym"></script>
+      dhxLayout.setEffect("resize", true);
+      dhxLayout.setAutoSize("b;a", "a;b");
+    }
+    
+    //그리드
+    function doInitGrid()
+    {
+    
+      var p_r_system = document.getElementById("p_r_system").value;
+      var p_r_descr = document.getElementById("p_r_descr").value;
+      var p_r_name = document.getElementById("p_r_name").value;
+       
+      tabbar = dhxLayout.cells("a").attachTabbar();
+      tabbar.setHrefMode("iframes-on-demand");
+      tabbar.setImagePath("/grid/dhtmlxTabbar/codebase/imgs/");
+      tabbar.setSkin("modern");
+      tabbar.addTab("a1", "통합", "150px");
+      tabbar.addTab("a2", "완료", "150px");
+      tabbar.addTab("a3", "접수", "150px");
+      tabbar.addTab("a4", "보류", "150px");
+      tabbar.addTab("a5", "신규", "150px");
+      var url1 = "'||v_pkg||'.query?p_companycd='||p_companycd||'&p_r_yn=&p_r_system="+p_r_system+"&p_r_descr="+p_r_descr+"&p_r_name="+p_r_name;
+      var url2 = "'||v_pkg||'.query?p_companycd='||p_companycd||'&p_r_yn=Y";
+      var url3 = "'||v_pkg||'.query?p_companycd='||p_companycd||'&p_r_yn=I";
+      var url4 = "'||v_pkg||'.query?p_companycd='||p_companycd||'&p_r_yn=B";
+      var url5 = "'||v_pkg||'.crrec?";
+      tabbar.setTabActive("a1");
+      tabbar.setContentHref("a1", url1); 
+      tabbar.setContentHref("a2", url2);
+      tabbar.setContentHref("a3", url3);
+      tabbar.setContentHref("a4", url4);
+      tabbar.setContentHref("a5", url5);
+      tabbar.attachEvent("onTabClick", function(id, lastId){
+           if(id=="a1"){ 
+            tabbar.setContentHref("a1", url1); 
+           }else if(id="a2"){
+            tabbar.setContentHref("a2", url2);
+           }else if(id="a3"){
+            tabbar.setContentHref("a3", url3);
+           }else if(id="a4"){
+            tabbar.setContentHref("a4", url4);
+           }
+      });
+    }
+    
+    function doQuery() 
+    { 
+      thisForm = document.forms[0]; 
+      thisForm.submit(); 
+    } 
+ 
+    function toQuery()
+    { 
+     thisForm = document.forms[0]; 
+     location.href = "'||v_pkg||'.control"; 
+    } 
+    
+    function newDoc()
+    { 
+     tabbar.setHrefMode("iframes-on-demand");
+     var url5 = "'||v_pkg||'.crrec";
+     tabbar.setTabActive("a5");
+     tabbar.setContentHref("a5", url5);  
+    } 
+ 
+    </script> 
+  </head> 
+  <body> 
+    <form id="form1" name="form1" action="'||v_pkg||'.control" method="post"> 
+      <div id="p00">
+        <div id="p01"><img src="/grid/dhtmlxGrid/samples/common/dhtmlxgrid_icon.gif" border="0">&nbsp;</div>
+        <div id="p02">Position : </span><span class="position" style="line-height: 20px;">Help Desk</div>
+      </div>
+      <div class="crlf"></div>
+        <div id="c00">
+            <div id="c01">
+                      <label for="p_r_system">'||get_fn('요청시스템')||'</label>
+                      <select id="p_r_system" name="p_r_system">');
+                      qc.list_qc_catalog_search_all('COM','R_SYSTEM','KO',p_r_system);htp.p('</select>
+                      ');
+                        if common.get_cookie('SYSID') = 'premier' or common.get_cookie('SYSID') = 'wooltare' or common.get_cookie('SYSID') = 'vivid069'  then  
+                 htp.p(' 
+                      <label for="p_companycd">'||get_fn('사업장')||'</label>     
+                      <select id="p_companycd" name="p_companycd">');   
+                      qc.list_qc_company(p_companycd,common.get_cookie('SYSLANG')); htp.p('   
+                      </select>
+                      ');
+                        end if;
+                 htp.p('
+                             <label for="p_r_descr">'||get_fn('요청내용')||'</label>
+            <input type="text" style="width:250px;" id="p_r_descr" name="p_r_descr" value="'||p_r_descr||'" />
+            
+            <label for="p_r_name">'||get_fn('요청자')||'</label>
+            <input type="text" style="width:100px;" id="p_r_name" name="p_r_name" value="'||p_r_name||'" />
+                    </div>
+            <div id="c11">
 
+            '||b_new||' 
+            '||b_search||' 
+            <a href="#" onclick="self.close(); return false;" class="btn-close buttons">'||get_fn('닫기')||'</a>         
+            </div>
+            <div class="crlf"></div>
+          <div id="c02">
+
+          </div>
+      <div class="crlf"></div>
+          </div>
+      <div id="parentId" style="position: relative; top: 0px; left: 0px; height: 600px; aborder: #B5CDE4 1px solid;"></div>
+      <div id="footer" class="sample_footer" style="margin: 0;">
+        자료검색중.....            
+      </div>
+      ');
+            IF common.get_cookie('SYSCOMP') = '01' then        
+            htp.p('
+            <font color="#0000ff"> 그룹웨어 담당자 번호 : 053-719-0303  (노준민 부장) </font></br>
+            <font color="#0000ff"> QMS & PLM 담당자 번호 : 070-4877-2943 (이정훈 부장)  </font> 
+            
+            ');
+            end if;
+            htp.p('
+    </form> 
+  </body> 
+   
+</html> 
+ 
+'); 
+  EXCEPTION 
+    when others then 
+      show_err;
+  END control; 
+   
+  procedure query  (
+    p_r_yn in varchar2 default null,
+    p_r_system in varchar2 default null,
+    p_r_menu in varchar2 default null,
+    p_companycd in varchar2 default null,
+    p_r_descr in varchar2 default null,
+    p_r_name  in varchar2 default null
+  )
+  IS 
+     
+    cursor cur is 
+    select a.* 
+    from   dbv_rc a, c_0010 b
+    where  a.companycd = b.companycd
+    and    a.r_name = b.xuser
+    and    nvl(a.r_yn,'*') = nvl(p_r_yn,nvl(a.r_yn,'*'))
+    and    nvl(a.r_system,'*') = decode(nvl(rtrim(p_r_system),'*'),'*',nvl(r_system,'*'), p_r_system)
+    --and    r_name = decode(common.get_cookie('SYSTYPE'),0,r_name,1,common.get_cookie('SYSID'))
+    and    a.companycd = p_companycd
+    and    a.r_descr like '%'||p_r_descr||'%'
+    and    b.xusernm like '%'||p_r_name||'%'
+    order by seq desc; 
+     
+    v_color   varchar2(100);    
+    v_number  number;  
+    v_r_yn  varchar2(20);
+    v_r_name  varchar2(200);
+  BEGIN    
+   
+    env_init;
+ 
+   v_number := 0; 
+ 
+   
+    htp.p(' 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">  
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko">  
+  <head>  
+    <title>'||common.get_cookie('SYSTITLE')||'</title>  
+    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />      
+    <link rel="stylesheet" type="text/css" media="screen" href="/grid/dhtmlxGrid/codebase/dhtmlxgrid.css">  
+    <link rel="stylesheet" type="text/css" media="screen" href="/grid/dhtmlxGrid/codebase/dhtmlxgrid_skins.css">  
+    <link rel="stylesheet" type="text/css" media="screen" href="/include/dbv_eco.css">  
+    <!--[if ie]>  
+    <style type="text/css">  
+    html {  
+      overflow: hidden;  
+      overflow-x: hidden;  
+      overflow-y: hidden;  
+    }  
+    </style>  
+    <![endif]-->  
+    <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/dhtmlxcommon.js"></script>  
+    <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/dhtmlxgrid.js"></script>  
+    <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/dhtmlxgridcell.js"></script>  
+    <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_json.js"></script>  
+    <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_mcol.js"></script>  
+    <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_hmenu.js"></script>  
+    <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_splt.js"></script>    
+    <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/ext/dhtmlxgrid_keymap_access.js"></script>  
+    <script type="text/javascript" src="/grid/dhtmlxGrid/codebase/excells/dhtmlxgrid_excell_link.js"></script>   
+    <script type="text/javascript" src="/include/jquery-latest.min.js"></script>  
+  
+    <script> 
+ 
+  data={ rows:[ '); 
     
+    for r in cur loop 
     
-    <script>
-    var page = "";
-    var newWnd2 = "";
-    
-    
-    function insertCode() {
-      thisForm = document.forms[0];
-      if (!confirm("저장하시겠습니까?")) return false;
-      thisForm.p_dml_gubun.value = "1";
-      thisForm.submit();
-      
-    }
-    
-    function deleteCode() {
-      thisForm = document.forms[0];
-      if (!confirm("삭제하시겠습니까?")) return false;
-        thisForm.p_dml_gubun.value = "2";
-        thisForm.submit();
-      
-    }
-    
-    function deleteAllCode() {
-      thisForm = document.forms[0];
-      if (!confirm("삭제되었습니다.    ")) return false;
-        thisForm.p_dml_gubun.value = "3";
-        thisForm.submit();
-      
-    }
-    
-    function appendCode() {
-      location.href = "comcatalog.crrec?p_systemcd=FMS&p_catalogcd=PROCESS_CODE";
-    }
-    
-    function manage_item() {
-      thisForm = document.forms[0];
-      
-      var page = "comcatalog.manage_item?p_systemcd="+"FMS"+"&p_catalogcd="+"PROCESS_CODE";
-      dialogprops = "status:no; help:no; resizable:no; edge:Raised; dialogWidth:810px; dialogHeight:500px;";
-      //window.showModalDialog(page, window, dialogprops);
-    
-    newWnd2 = window.open(page,"window","top=100, left=100, status=yes, resizable=no, width=810, height=500");
-    }
-    
-        function copy_(){
-            if(confirm("저장하시겠습니까?")){
-                form1.p_en.value = form1.p_ko.value;
-                form1.p_ch.value = form1.p_ko.value;
-                form1.p_sp.value = form1.p_ko.value;
-            }
+      if r.p_ymd < sysdate then 
+        
+        if r.r_yn != 'Y' then -- 요청완료일이 지났는데 완료가 아닌경우 빨강색표시 
+          v_color := 'style:"background-color: #FA8C7A;", ';
+        end if; 
+        
+      else 
+        v_color := null; 
+      end if;
+       
+      if v_number>0 then
+        htp.p(',');
+      end if;
+      v_number:=v_number+1;
+      if r.companycd !='ZZ' then
+        v_r_name := GET_USER_NAME_new(r.r_name);
+      else
+        v_r_name := get_vendnm('ZZ',r.r_name);
+      end if;
+      if r.r_yn='Y' then v_r_yn := '완료';
+      elsif r.r_yn='N' then v_r_yn := '미완료';
+      elsif r.r_yn='B' then v_r_yn := '보류';
+      elsif r.r_yn='I' then v_r_yn := '접수';
+      else v_r_yn := '요청';
+      end if;
+      htp.p('
+        { 
+          id:'||v_number||',
+            data:[ 
+              "'||r.seq||'^javascript:link_(\"'||r.seq||'\")^_self",
+              "'||get_catalog_name('COM','R_SYSTEM',common.get_cookie('SYSLANG'),r.r_system)||'^javascript:link_(\"'||r.seq||'\")^_self",
+              "'||r.r_ymd||'^javascript:link_(\"'||r.seq||'\")^_self",
+              "'||v_r_name||'^javascript:link_(\"'||r.seq||'\")^_self",
+              "<pre>'||return_html_text(r.r_descr)||'</pre>",
+              {'||v_color||'value:"'||r.p_ymd||'"},
+              "'||r.p_name||'",
+              "<pre>'||return_html_text(r.p_descr)||'</pre>",
+              "'||v_r_yn||'"
+            ] 
         }
-        
-        function toCopy(objRow1){
-        //var src = objRow1;
-        var src = "get_catalog_name('FMS','"+objRow1+"',common.get_cookie('SYSLANG'), rec."+objRow1+")";
-        
-        if(window.clipboardData){
-      clipboardData.setData("text",src);
-      }else if(window.netscape){
-        netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-        var clip = Components.classes["@mozilla.org/widget/clipboard;1"].createInstance(Components.interfaces.nsIClipboard);
-      if(!clip) return;
-      var trans = Components.classes["@mozilla.org/widget/transferable;1"].createInstance(Components.interfaces.nsITransferable);
-      if(!trans) return;
-      trans.addDataFlavor("text/unicode");
-      var str = new Object(),len = new Object();
-      var str = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString);
-      str.data=src;
-      trans.setTransferData("text/unicode",str,src.length*2);
-      var clipid=Components.interfaces.nsIClipboard;
-      if(!clipid) return false;
-      clip.setData(trans,null,clipid.kGlobalClipboard);
-      }
-        }
-    </script>
-
-  </head>
-
-  <body class="crrec" scroll="auto">
-    <form name="form1" method="post" action="comcatalog.process">    
-      <input type="hidden" name="p_dml_gubun" value="" />
-      
-            <table width="100%">
-                <tr>
-                    <td colspan="5" align="right" height="20" style="border:solid #D6D6D6 1px">
-            <a href="#" class="btn-new buttons" onClick="appendCode();">신규</a>
-            <a href="#" class="btn-save buttons" onClick="insertCode();">저장</a>
-            <a href="#" class="btn-delete buttons" onClick="deleteCode();">삭제</a>
-            <a href="#" class="btn-delete buttons" onClick="deleteAllCode();">전체삭제</a>
-            <a href="#" class="btn-close buttons" onClick="self_close();">닫기</a>
-          </td>
-                </tr>
-                <tr>
-                    <td class="titletd">시스템코드</td>
-                    <td class="inputtd">
-          
-
-          FMS
-            <input type="hidden" name="p_systemcd" value="FMS"/> 
-          
-
-          </td>    
-                    <td width="9"></td>
-                    <td class="titletd">카탈로그코드</td>
-                    <td class="inputtd">
-        
-
-          PROCESS_CODE
-            <input type="hidden" name="p_catalogcd" value="PROCESS_CODE" />
-      
-
-                    <a href="#" onclick="toCopy('PROCESS_CODE')">[G.C.M.]</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="titletd">코드내용</td>
-                    <td class="inputtd" colspan="4"><input type="text" name="p_descr" class="txtbox2" value="FMS 설비마스터 : 공정" /></td>
-                </tr>
-                <tr>
-                    <td class="titletd">코드</td>
-                    <td class="inputtd"><input type="text" name="p_listvalue" class="txtbox" value="" /></td>
-                    <td width="9"></td>
-                    <td width="192" class="titletd">순서</td>
-                    <td class="inputtd"><input type="text" name="p_listorder" class="txtbox" value="" /></td>
-                </tr>
-                <tr>
-                    <td class="titletd">한국어</td>
-                    <td class="inputtd" colspan="4"><input type="text" name="p_ko" style="width: 80%" value="" /><a href="#" onclick="copy_(); return false;">Copy</a></td>
-                </tr>
-                <tr>
-                    <td class="titletd">영어</td>
-                    <td class="inputtd" colspan="4"><input type="text" name="p_en" style="width: 98%" value="" /></td>
-                </tr>
-                <tr>
-                    <td class="titletd">중국어</td>
-                    <td class="inputtd" colspan="4"><input type="text" name="p_ch" style="width: 98%" value="" /></td>
-                </tr>
-                <tr>
-                    <td class="titletd">스페인어</td>
-                    <td class="inputtd" colspan="4"><input type="text" name="p_sp" style="width: 98%" value="" /></td>
-                </tr>
-            </table> 
-      <iframe id="c0051List" src="comcatalog.list_catalog?p_systemcd=FMS&p_catalogcd=PROCESS_CODE&p_flag=" frameborder="0" scrolling="no" style="width: 100%; height:450px;"></iframe>
-    </form>
-    </body>
-</html>
+      '); 
+      v_color := null;
+    end loop;  
     
+    if v_number=0 then  
+    htp.p('{ id:'||v_number||',data:[ , ] } ');  
+    end if; 
+  
+htp.p('          
+    ] }  
+ 
+  var mygrid; 
+  function doInitGrid(){ 
+   mygrid = new dhtmlXGridObject(''mygrid_container''); 
+ 
+   mygrid.setImagePath("/grid/dhtmlxGrid/codebase/imgs/"); 
+   mygrid.setHeader("No,'||get_fn('시스템')||','||get_fn('요청일')||','||get_fn('요청자')||','||get_fn('요청내용')||','||get_fn('처리예정일')||','||get_fn('처리자')||','||get_fn('처리내용')||','||get_fn('처리')||'"); 
+   mygrid.setInitWidths("30,50,70,70,350,70,70,310,*"); 
+   mygrid.setColAlign("center,center,center,center,left,center,left,left,center")  
+   mygrid.setColTypes("link,link,link,link,ro,ro,ro,ro,ro"); 
+   mygrid.enableColumnMove(true);   // 셀 이동... 
+   mygrid.enableCollSpan(true); 
+   mygrid.setColSorting("str,str,str,str,str,str,str,str,str")// 셀소팅 
+   mygrid.enableDistributedParsing(true,10,300);//버퍼 기능 
+   
+  mygrid.init();  
+ 
+  mygrid.enableHeaderMenu(); 
+  
+  mygrid.setSkin("light"); 
+   mygrid.parse(data,"json"); 
+    changeText("자료검색을 종료합니다.."+"'||v_number||'건이 검색되었습니다." ); 
+  } 
+  function changeText(objText) { 
+  parent.document.getElementById("footer").innerHTML=objText; 
+  } 
+  function link_(p_seq){
+    location.href="'||v_pkg||'.crrec?p_seq="+p_seq;
+  }
+ </script> 
+ <body onload="doInitGrid()"> 
+ 
+  <div id="mygrid_container" style="width:100%;height:100%;"></div> 
+ </body> 
+ </html> 
+'); 
+ 
+  EXCEPTION  
+    when others then 
+      show_err;
+  END QUERY; 
+ 
+  procedure crrec 
+  ( 
+    p_seq               in number default null,
+    p_session_id          in varchar2 default USERENV('SESSIONID'), 
+    p_sysdate           in varchar2 default to_char(sysdate,'yyyymmddhh24miss')
+  ) 
+  IS 
+   
+    cursor cur is  
+      select * 
+      from    dbv_rc
+      where   seq = p_seq;
+      
+    rec dbv_rc%rowtype;
+           
+    cursor fnd_name is
+      select xusernm, mobile 
+      from   c_0010
+      where  companycd = common.get_cookie('SYSCOMP')
+      and    gubun = common.get_cookie('SYSTYPE') 
+      and    upper(xuser) = upper(common.get_cookie('SYSID'));
+           
+    v_name c_0010.xusernm%type;
+    v_mobile c_0010.xusernm%type;  
+
+  BEGIN 
+    env_init;
+    
+    open cur; 
+    fetch cur into rec; 
+    close cur;  
+    
+    if rec.r_name is null then
+       open fnd_name;
+       fetch fnd_name into v_name, v_mobile;
+       close fnd_name;
+    else
+      if rec.companycd !='ZZ' then
+       v_name := get_user_name(rec.companycd,rec.r_name);
+      else
+       v_name := get_vendnm('ZZ',rec.r_name);
+      end if;
+    end if;   
+    
+   
+    
+    htp.p('    
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+  <head> 
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">    
+    <link rel="stylesheet" type="text/css" media="screen" href="/include/jquery-ui-1.8.9.custom.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/include/dbv_eco.css" /> 
+    ');   
+    dbv_grid.print_env;
+    javascript.js;        
+    
+    htp.p('
+    <script type="text/javascript" src="/include/jquery-latest.min.js"></script>
+    <script type="text/javascript" src="/include/jquery-ui-1.8.9.custom.min.js"></script>
+    <script type="text/javascript" src="/include/jquery.ui.datepicker-ko.js"></script>
+ 
+    <script type="text/javascript"> 
+    $(function() {
+      $("#p_r_ymd").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: "yymmdd",
+        buttonImage: "/image/calendar.gif",
+        showOn: "focus", // focus, button, both
+        showAnim: "fadeIn", //explode, fold, slideDown
+        showOptions: {pieces: 1},
+        duration: 500
+      }) ;
+       $("#p_p_ymd").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: "yymmdd",
+        buttonImage: "/image/calendar.gif",
+        showOn: "focus", // focus, button, both
+        showAnim: "fadeIn", //explode, fold, slideDown
+        showOptions: {pieces: 1},
+        duration: 500
+      }) ;
+      $("#p_i_ymd").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: "yymmdd",
+        buttonImage: "/image/calendar.gif",
+        showOn: "focus", // focus, button, both
+        showAnim: "fadeIn", //explode, fold, slideDown
+        showOptions: {pieces: 1},
+        duration: 500
+      }) ;
+       });      
+     </script>
+
+    <script language="JavaScript" type="text/JavaScript">
+    function toProcess() { 
+      thisForm = document.forms[0];
+      
+      if(input_valid("dat",document.getElementById("p_r_ymd").value,true,"요청일자",8)){thisForm.p_r_ymd.focus();return false;}    
+    
+      if (!confirm("'||get_fn('저장하시겠습니까?')||'")) return false; 
+      thisForm = document.forms[0];         
+      thisForm.p_dml_gubun.value = "1"; 
+      thisForm.submit(); 
+    }  
+    
+    function toDelete() { 
+      if (!confirm("'||get_fn('삭제하시겠습니까?')||'")) return false; 
+      thisForm = document.forms[0]; 
+      thisForm.p_dml_gubun.value = "2"; 
+      thisForm.submit(); 
+    } 
+     
+    </script>     
+  </head> 
+ 
+  <body id="crrec"> 
+    <form name="form1" method="post" action="'||v_pkg||'.process">   
+    <input type="hidden" name="p_dml_gubun" value="" /> 
+    <input type="hidden" name="p_session_id" value="'||p_session_id||'" /> 
+    <input type="hidden" name="p_sysdate" value="'||p_sysdate||'" /> 
+    <table width="100%">
+    <tr> 
+      <td colspan="5" class="btnbar"> 
+        <a href="#1" id="save2" class="btn-save buttons" onclick="toProcess(); return false;">'||get_fn('저장')||'</a> &nbsp;  
+        <a href="#1" id="delete2" class="btn-delete buttons" onclick="toDelete(); return false;">'||get_fn('삭제')||'</a> &nbsp;  
+      </td> 
+    </tr> 
+    <tr>  
+      <td class="titletd">'||get_fn('순번')||'</td> 
+      <td class="inputtd" >'||rec.seq||'
+        <input type="hidden" id="p_seq" name="p_seq" maxlength="10"  value="'||rec.seq||'">
+      </td>
+      <td></td>
+      <td class="titletd">'||get_fn('요청시스템')||'</td> 
+      <td class="inputtd">
+              <select id="p_r_system" name="p_r_system">');
+              qc.list_qc_catalog_search('COM','R_SYSTEM','KO',rec.r_system);htp.p('</select>
+              <!--select id="p_r_menu" name="p_r_menu">
+              ');
+--              qc.list_qc_catalog_search('COM','R_MENU','KO',rec.r_menu);
+              htp.p('
+             </select-->
+            </td>
+    </tr> 
+    <tr>  
+      <td class="titletd">'||get_fn('요청일')||'</td> 
+      <td class="inputtd">');
+      if rec.r_ymd is null then htp.p('
+      <input type="text" id="p_r_ymd" name="p_r_ymd" maxlength="8"  style="width:70px;" value="'||to_char(sysdate,'yyyymmdd')||'" class="date">
+      ');
+      else
+      htp.p('
+      <input type="hidden" id="p_r_ymd" name="p_r_ymd" maxlength="8"  style="width:70px;" value="'||to_char(rec.r_ymd,'yyyymmdd')||'" class="date">
+      '||to_char(rec.r_ymd,'yyyy.mm.dd')||'
+      ');
+      end if;
+      htp.p('</td>
+      <td></td>
+      <td class="titletd">'||get_fn('요청자')||'/'||get_fn('연락처')||'</td> 
+      <td class="inputtd">'||v_name||'/
+              <input type="hidden" id="p_r_name" name="p_r_name" maxlength="40"  value="'||common.get_cookie('SYSID')||'">
+              ');
+              if rec.p_phone is null then 
+              htp.p('
+                <input type="text" id="p_r_phone" name="p_r_phone" maxlength="40"  value="'||v_mobile||'">
+              ');
+              else
+              htp.p('
+                <input type="text" id="p_r_phone" name="p_r_phone" maxlength="40"  value="'||rec.p_phone||'">
+              ');
+              end if;
+              htp.p('
+            </td>
+    </tr> 
+    <tr>  
+      <td class="titletd">'||get_fn('요청내용')||'</td> 
+      <td class="inputtd" colspan="4"><textarea name="p_r_descr" rows="10" cols="70" warp="hard" style="width:99%;">'||rec.r_descr||'</textarea></td>          
+    </tr>
+    
+    <tr>  
+      <td class="titletd">'||get_fn('수정요청')||' '||get_fn('첨부파일')||'</td> 
+      <td class="inputtd" colspan="4"><iframe id="attachList" name="attachList" src="'||v_pkg||'.attachList?p_seq='||rec.seq||'&p_session_id='||p_session_id||'&p_sysdate='||p_sysdate||'" style="width: 100%; height: 90px;" scrolling="no" frameborder="0"></iframe> </td>          
+    </tr>
+  ');  
+  if rec.seq is not null then
+ htp.p('
+    <tr>  
+      <td class="titletd">'||get_fn('처리일예정일')||'/'||get_fn('접수일')||'</td> 
+      <td class="inputtd">
+      ');
+      if rec.p_ymd is null then
+      htp.p('
+        <input type="text" id="p_p_ymd" name="p_p_ymd" maxlength="8"  style="width:70px;" value="'||to_char(rec.p_ymd,'yyyymmdd')||'" class="date">&nbsp;/&nbsp;
+        <input type="text" id="p_i_ymd" name="p_i_ymd" maxlength="8"  style="width:70px;" value="'||to_char(rec.i_ymd,'yyyymmdd')||'" class="date">
+      ');
+      else
+      htp.p('
+        <input type="hidden" id="p_p_ymd" name="p_p_ymd" maxlength="8"  style="width:70px;" value="'||to_char(rec.p_ymd,'yyyymmdd')||'" class="date">
+        '||to_char(rec.p_ymd,'yyyy.mm.dd')||' &nbsp;/&nbsp;
+        <input type="hidden" id="p_i_ymd" name="p_i_ymd" maxlength="8"  style="width:70px;" value="'||to_char(rec.i_ymd,'yyyymmdd')||'" class="date">
+        '||to_char(rec.i_ymd,'yyyy.mm.dd')||'    
+      ');
+      end if;
+      htp.p('  
+      </td>
+      <td></td>
+      <td class="titletd">'||get_fn('처리자')||'</td> 
+      <td class="inputtd"><input type="text" name="p_p_name" maxlength="40" value="'||rec.p_name||'"></td>
+    </tr>     
+    <tr>  
+      <td class="titletd">'||get_fn('완료')||'Y/N/B</td> 
+      <td class="inputtd"><select id="p_r_yn" name="p_r_yn">');dbv_rc_qms_test.list_r_yn(nvl(rec.r_yn,'N'),'Y');htp.p('</select></td>
+      <td colspan="3"></td>
+    </tr> 
+    <tr>  
+      <td class="titletd">'||get_fn('처리내용')||'</td> 
+      <td class="inputtd" colspan="4"><textarea name="p_p_descr" rows="10" cols="70" warp="hard"  style="width:99%;">'||rec.p_descr||'</textarea></td>          
+    </tr>
+    <tr>  
+      <td class="titletd">'||get_fn('처리내용')||' '||get_fn('첨부파일')||'</td> 
+      <td class="inputtd" colspan="4"><iframe id="attachList2" name="attachList2" src="'||v_pkg||'.attachList2?p_seq='||rec.seq||'&p_session_id='||p_session_id||'&p_sysdate='||p_sysdate||'" style="width: 100%; height: 90px;" scrolling="no" frameborder="0"></iframe> </td>          
+    </tr>
+    ');
+    end if;
+  htp.p('
+    </table>
+    </form> 
+  </body>  
+</html> 
+    '); 
+  END crrec; 
+   
+  procedure process 
+  ( 
+    p_seq                in number default null,
+    p_r_ymd              in varchar2 default null,
+    p_r_name            in varchar2 default null,
+    p_r_phone            in varchar2 default null,
+    p_r_descr            in varchar2 default null,
+    p_p_ymd              in varchar2 default null,
+    p_p_name            in varchar2 default null,
+    p_p_descr            in varchar2 default null,
+    p_r_system          in varchar2 default null,
+    p_r_menu            in varchar2 default null,
+    p_r_yn              in varchar2 default null,
+    p_dml_gubun          in varchar2 default null,
+    p_session_id          in varchar2 default null,
+    p_sysdate            in varchar2 default null,
+    p_i_ymd             in varchar2 default null
+  )
+  is 
+    v_seq    number;
+    v_yn    varchar2(1);
+    v_r_ymd  date:=to_date(p_r_ymd,'yyyymmdd');
+    v_p_ymd  date:=to_date(p_p_ymd,'yyyymmdd');
+    v_i_ymd  date:=to_date(p_i_ymd,'yyyymmdd');
+  begin 
+  
+    if p_dml_gubun = '1' then 
+      v_yn := p_r_yn;
+      
+      if p_seq is null then
+        begin
+          select nvl(max(seq),0)+1
+          into v_seq
+          from dbv_rc;
+        end;      
+      else
+        v_seq := p_seq;
+      end if;
+      for recFile in curTmpFile(v_pkg, p_session_id, p_sysdate) loop 
+        
+        open fnd_max_seq(v_seq); 
+        fetch fnd_max_seq into v_max_seq; 
+        close fnd_max_seq; 
+
+        begin 
+          insert into dbv_rc_file ( seq,
+                                   sno, file_name, full_file_name, 
+                                   login_id, login_companycd, login_ymd ) 
+                          values ( v_seq,
+                                   v_max_seq, recFile.file_name, recFile.full_file_name, 
+                                   common.get_cookie('SYSID'), common.get_cookie('SYSCOMP'), sysdate ); 
+          exception when others then null; 
+        end; 
+      end loop;
+      begin 
+          insert into dbv_rc ( seq, r_ymd, r_name, r_descr, p_ymd, p_name, p_descr, r_yn, login_ymd, r_system, r_menu, companycd, p_phone, i_ymd) 
+          values (v_seq, v_r_ymd, p_r_name, p_r_descr, v_p_ymd, p_p_name, p_p_descr, 'N'/*처음요청할때 처리내용 안보임으로 처리*/, sysdate, p_r_system, p_r_menu, common.get_cookie('SYSCOMP'),p_r_phone, v_i_ymd); 
+          
+      exception 
+        when dup_val_on_index then 
+          update dbv_rc 
+          set     r_ymd = v_r_ymd,
+                  r_descr = p_r_descr,
+                  p_ymd = v_p_ymd,
+                  p_name = p_p_name,
+                  p_descr = p_p_descr,
+                  r_yn = v_yn,
+                  login_ymd = sysdate,
+                  r_system = p_r_system,
+                  r_menu = p_r_menu,
+                  p_phone = p_r_phone,
+                  i_ymd = v_i_ymd
+          where   seq = v_seq;
+        when others then 
+              show_err;
+      end; 
+         
+      commit;
+      htp.p(' 
+        <script> 
+            alert("'||get_fn('저장되었습니다.')||'"); 
+            //parent.parent.doQuery();
+            location.href = "'||v_pkg||'.crrec?p_seq='||v_seq||'"; 
+        </script> 
+      '); 
+  elsif p_dml_gubun = '2' then 
+    begin 
+      delete from dbv_rc 
+      where   seq=p_seq;
+    end; 
+    
+    
+      commit;
+
+    htp.p(' 
+    <script> 
+        alert("'||get_fn('삭제되었습니다.')||'") 
+        parent.location.href = "'||v_pkg||'.control"; 
+    </script> 
+    '); 
+     
+    end if ;     
+  end process; 
+  
+  procedure attachList
+  (   
+   p_seq             in number default null,   
+   p_file_name       in varchar2 default null,
+   p_dml_gubun       in varchar2 default '0',
+   attachflag       in varchar2 default null,
+   attachStr         in varchar2 default null,
+   lbFile           in varchar2 default null,
+   p_full_file_name in varchar2 default null,
+   p_session_id      in varchar2 default null,
+   p_sysdate         in varchar2 default null,
+   p_flag            in varchar2 default null
+  )
+  is
+    cursor fnd_max_temp_seq is 
+    select nvl(max(seq)+1,1) 
+    from   temp_attach_file 
+    where  pgm_id = v_pkg 
+    and    session_id = p_session_id 
+    and    sdate = p_sysdate; 
+   
+    cursor curFile is 
+    select a.*, check_rowid(b.rowid, '1') rowkey 
+    from   dbv_rc_file a, qis_upload_file b  
+    where  a.seq = p_seq     
+    and     get_replace_file_name(a.full_file_name) = get_replace_file_name(b.name)
+    order by a.sno;
+    
+  BEGIN 
+    --if ( v_level > 50 ) then owa_util.redirect_url('error_page'); end if; 
+      -- 등록 후 첨부 파일을 작업을 했다면... 
+      if p_seq is not null then 
+ 
+         -- 등록.. 
+         if ( p_dml_gubun = '1' and p_file_name is not null ) then 
+ 
+            BEGIN 
+              select name, file_name into v_full_file_name, v_file_name 
+              from (select name, file_name from qis_upload_file where name = p_file_name order by last_updated desc) 
+              where rownum = 1; 
+            EXCEPTION when others then null; 
+            END; 
+ 
+            open fnd_max_seq(p_seq); 
+            fetch fnd_max_seq into v_max_seq; 
+            close fnd_max_seq; 
+ 
+            begin 
+              insert into dbv_rc_file ( seq, 
+                                       sno, file_name, full_file_name, 
+                                       login_id, login_companycd, login_ymd ) 
+                              values ( p_seq,
+                                       v_max_seq, v_file_name, v_full_file_name, 
+                                       common.get_cookie('SYSID'), common.get_cookie('SYSCOMP'), sysdate ); 
+            exception when others then null; 
+        end; 
+         -- 삭제 
+         elsif p_dml_gubun = '2' then 
+ 
+            begin 
+              delete from qis_upload_file where rowid = p_full_file_name;    
+              delete from dbv_rc_file a where a.seq = p_seq 
+              and exists ( select 1
+                         from   qis_upload_file
+                         where  rowid = check_rowid(p_full_file_name,'2')
+                         and    get_replace_file_name(name) = get_replace_file_name(a.full_file_name) );
+            end; 
+ 
+         end if; 
+ 
+      -- 등록 하기 전에 첨부 파일을 작업을 했다면... 
+      elsif p_seq is null then 
+ 
+ 
+         -- 등록.. 
+         if ( p_dml_gubun = '1' and p_file_name is not null ) then 
+ 
+            BEGIN 
+              select name, file_name into v_full_file_name, v_file_name 
+              from (select name, file_name from qis_upload_file where name = p_file_name order by last_updated desc) 
+              where rownum = 1; 
+            EXCEPTION when others then null; 
+            END; 
+ 
+            open fnd_max_temp_seq; 
+            fetch fnd_max_temp_seq into v_max_seq; 
+            close fnd_max_temp_seq; 
+ 
+            begin 
+              insert into temp_attach_file ( pgm_id, session_id, sdate, seq, file_name, full_file_name  ) 
+                                    values ( v_pkg, p_session_id, p_sysdate, v_max_seq, v_file_name, v_full_file_name ); 
+ 
+            end; 
+ 
+         -- 삭제 
+         elsif p_dml_gubun = '2' then 
+ 
+            begin 
+              delete from temp_attach_file where pgm_id = v_pkg and session_id = p_session_id and sdate = p_sysdate 
+              and full_file_name = ( select name from qis_upload_file where rowid = check_rowid(p_full_file_name,'2')); 
+            end; 
+ 
+         end if; 
+ 
+ 
+      end if; 
+ 
+      commit; 
+  htp.p(' 
+  <HTML> 
+    <HEAD> 
+      <title>attach_form</title> 
+      <link rel="stylesheet" type="text/css" href="/include/dbv_eco.css" /> 
+      <script language="javascript"> 
+      function checkFrom(mode){ 
+        thisForm = document.attachform; 
+ 
+        if (mode == "add") { 
+          var file = document.attachform.p_file_name.value; 
+          var optStr; 
+          var i = document.attachform.lbFile.length; 
+ 
+          if(file == ""){ 
+            alert("'||get_fn('첨부할 파일을 선택하십시오.')||'"); 
+            return false; 
+          } else { 
+            if(i > 30){ 
+              alert("'||get_fn('파일 첨부는 3개까지 가능합니다..')||'") 
+              return false; 
+            } else { 
+              document.attachform.attachflag.value = "true"; 
+              var nIndexFileName = file.lastIndexOf("\\"); 
+ 
+              if (nIndexFileName > 0) 
+                file = file.substr(nIndexFileName + 1); 
+ 
+              optStr = new Option(file + "'||get_fn('첨부중입니다.')||'",file,true); 
+              document.attachform.lbFile.options[i] = optStr; 
+              thisForm.p_dml_gubun.value = "1"; 
+              thisForm.submit(); 
+            } 
+          } 
+        } else if (mode == "del") { 
+          var files = document.attachform.lbFile; 
+          var j = document.attachform.lbFile.length; 
+ 
+          if(j > 0){ 
+            if(files.selectedIndex < 0 || files.selectedIndex == null){ 
+              alert("DELATTACH"); 
+              return false; 
+            } 
+          } else { 
+            return false; 
+          } 
+          thisForm.p_dml_gubun.value = "2"; 
+          var files = document.attachform.lbFile; 
+          var i = document.attachform.lbFile.options.selectedIndex; 
+                  thisForm.p_full_file_name.value = files.options[i].value;
+                  thisForm.submit(); 
+                  
+        } else if (mode == "view") { 
+          var files = document.attachform.lbFile; 
+          var j = document.attachform.lbFile.length; 
+          var i = document.attachform.lbFile.selectedIndex; 
+          if(j > 0){ 
+            if(files.selectedIndex < 0 || files.selectedIndex == null){ 
+              alert("SEARCHFILE"); 
+              return false; 
+            } else { 
+              var select_text = files.options[i].value; 
+              if ( select_text != null ) { 
+                 var page = encodeURI("Edp_Download_k?p_file="+select_text); 
+                 newWnd2 = window.open(page,"window"); 
+              } 
+            } 
+          }  
+          else { 
+            return false; 
+          } 
+        } 
+        return true; 
+      } 
+      </script> 
+    </HEAD> 
+    <body bgcolor="white" marginwidth="0" marginheight="0" topmargin="0" leftmargin="0" > 
+      <form name="attachform" method="post" action="'||v_pkg||'.attachList" id="attachform" enctype="multipart/form-data"> 
+      <input name="attachStr" id="attachStr" type="hidden" /> 
+      <input type="hidden" name="attachflag" value="false">       
+      <input type="hidden" name="p_seq" value="'||p_seq||'">       
+      <input type="hidden" name="p_dml_gubun" value="0"> 
+      <input type="hidden" name="p_full_file_name" value=""> 
+      <input type="hidden" name="p_session_id" value="'||nvl(p_session_id,1)||'"> 
+      <input type="hidden" name="p_sysdate" value="'||nvl(p_sysdate,1)||'"> 
+      <input type="hidden" name="p_flag" value="'||p_flag||'"> 
+      <input name="p_file_name" id="p_file_name" type="file" size="65" style="WIDTH:98%; BORDER-TOP-STYLE:groove; BORDER-RIGHT-STYLE:groove; BORDER-LEFT-STYLE:groove; BORDER-BOTTOM-STYLE:groove" /> 
+      <div id="filelist"> 
+      <select name="lbFile" size="4" id="lbFile" style="width: 90%; height: 70px;">'); 
+      if p_seq is not null then 
+         for recFile in curFile loop 
+             htp.p('<option value="'||recFile.rowkey||'">'||recFile.file_name||'</option>'); 
+         end loop; 
+      elsif p_seq is null then 
+         for recFile in curTmpFile(v_pkg, p_session_id, p_sysdate) loop 
+             htp.p('<option value="'||recFile.rowkey||'">'||recFile.file_name||'</option>'); 
+         end loop; 
+      end if;       
+      htp.p(' 
+      </select> 
+        </div> 
+        <div id="filebtn"> 
+          <a href="#" onclick="checkFrom(''add'');" class="btn-attach buttons">'||get_fn('첨부')||'</a> 
+          <a href="#" onclick="checkFrom(''del'');" class="btn-delete buttons">'||get_fn('삭제')||'</a> 
+          <a href="#" onclick="checkFrom(''view'');" class="btn-view buttons">'||get_fn('보기')||'</a> 
+        </div> 
+      </form> 
+    </body> 
+  </HTML>'); 
+  EXCEPTION 
+     when others then 
+        show_err;
+  end attachList;
+  
+  PROCEDURE list_r_yn ( 
+    p_r_yn           in varchar2 default null,
+    p_is_null_      in varchar2 default 'N'
+  )
+  IS
+    cursor cur_search is
+    select null colnm, '전체' colValue
+    from   dual
+    where p_is_null_ = 'Y'
+    union all
+    select 'Y' colnm, '완료' colValue
+    from   dual    
+    union all
+    select 'B' colnm, '보류' colValue
+    from   dual
+    union all
+    select 'I' colnm, '접수' colValue
+    from   dual;
+      v_selected varchar2(20);
+  BEGIN
+    for rec in cur_search loop
+      if (nvl(p_r_yn,'*') = nvl(rec.colnm,'*')) then v_selected := '" selected>'; else v_selected := '">'; end if;
+      htp.p('<option value="'||rec.colnm||v_selected||rec.colValue||'</option>');
+    end loop;
+  END;
+  
+  
+  
+  procedure attachList2
+  (   
+   p_seq             in number default null,   
+   p_file_name       in varchar2 default null,
+   p_dml_gubun       in varchar2 default '0',
+   attachflag       in varchar2 default null,
+   attachStr         in varchar2 default null,
+   lbFile           in varchar2 default null,
+   p_full_file_name in varchar2 default null,
+   p_session_id      in varchar2 default null,
+   p_sysdate         in varchar2 default null,
+   p_flag            in varchar2 default null
+  )
+  is
+    cursor fnd_max_seq(p_seq in number) is 
+    select nvl(max(sno)+1,1) 
+    from   DBV_RC_FILE2 
+    where  seq = p_seq ; 
+    
+    cursor fnd_max_temp_seq is 
+    select nvl(max(seq)+1,1) 
+    from   temp_attach_file 
+    where  pgm_id = v_pkg 
+    and    session_id = p_session_id 
+    and    sdate = p_sysdate; 
+   
+    cursor curFile is 
+    select a.*, check_rowid(b.rowid, '1') rowkey 
+    from   DBV_RC_FILE2 a, qis_upload_file b   
+    where  a.seq = p_seq     
+    and     get_replace_file_name(a.full_file_name) = get_replace_file_name(b.name)
+    order by a.sno;
+    
+  BEGIN 
+--  SHOW_ALERT(p_seq);
+    --if ( v_level > 50 ) then owa_util.redirect_url('error_page'); end if; 
+      -- 등록 후 첨부 파일을 작업을 했다면... 
+      if p_seq is not null then 
+ 
+         -- 등록.. 
+         if ( p_dml_gubun = '1' and p_file_name is not null ) then 
+ 
+            BEGIN 
+              select name, file_name into v_full_file_name, v_file_name 
+              from (select name, file_name from qis_upload_file where name = p_file_name order by last_updated desc) 
+              where rownum = 1; 
+            EXCEPTION when others then null; 
+            END; 
+ 
+            open fnd_max_seq(p_seq); 
+            fetch fnd_max_seq into v_max_seq; 
+            close fnd_max_seq; 
+ 
+            begin 
+              insert into DBV_RC_FILE2 ( seq, 
+                                       sno, file_name, full_file_name, 
+                                       login_id, login_companycd, login_ymd ) 
+                              values ( p_seq,
+                                       v_max_seq, v_file_name, v_full_file_name, 
+                                       common.get_cookie('SYSID'), common.get_cookie('SYSCOMP'), sysdate ); 
+            exception when others then null; 
+        end; 
+         -- 삭제 
+         elsif p_dml_gubun = '2' then 
+ 
+            begin 
+              delete from qis_upload_file where rowid = p_full_file_name;  
+              delete from DBV_RC_FILE2 a where a.seq = p_seq 
+              and exists ( select 1
+                         from   qis_upload_file
+                         where  rowid = check_rowid(p_full_file_name,'2')
+                         and    get_replace_file_name(name) = get_replace_file_name(a.full_file_name) );
+            end; 
+ 
+         end if; 
+ 
+      -- 등록 하기 전에 첨부 파일을 작업을 했다면... 
+      elsif p_seq is null then 
+ 
+ 
+         -- 등록.. 
+         if ( p_dml_gubun = '1' and p_file_name is not null ) then 
+ 
+            BEGIN 
+              select name, file_name into v_full_file_name, v_file_name 
+              from (select name, file_name from qis_upload_file where name = p_file_name order by last_updated desc) 
+              where rownum = 1; 
+            EXCEPTION when others then null; 
+            END; 
+ 
+            open fnd_max_temp_seq; 
+            fetch fnd_max_temp_seq into v_max_seq; 
+            close fnd_max_temp_seq; 
+ 
+            begin 
+              insert into temp_attach_file ( pgm_id, session_id, sdate, seq, file_name, full_file_name  ) 
+                                    values ( v_pkg, p_session_id, p_sysdate, v_max_seq, v_file_name, v_full_file_name ); 
+ 
+            end; 
+ 
+         -- 삭제 
+         elsif p_dml_gubun = '2' then 
+ 
+            begin 
+              delete from temp_attach_file where pgm_id = v_pkg and session_id = p_session_id and sdate = p_sysdate 
+              and full_file_name = ( select name from qis_upload_file where rowid = check_rowid(p_full_file_name,'2'));
+            end;                                                                                                       
+ 
+         end if; 
+ 
+ 
+      end if; 
+ 
+      commit; 
+  htp.p(' 
+  <HTML> 
+    <HEAD> 
+      <title>attach_form</title> 
+      <link rel="stylesheet" type="text/css" href="/include/dbv_eco.css" /> 
+      <script language="javascript"> 
+      function checkFrom(mode){ 
+        thisForm = document.attachform; 
+ 
+        if (mode == "add") { 
+          var file = document.attachform.p_file_name.value; 
+          var optStr; 
+          var i = document.attachform.lbFile.length; 
+ 
+          if(file == ""){ 
+            alert("'||get_fn('첨부할 파일을 선택하십시오.')||'"); 
+            return false; 
+          } else { 
+            if(i > 30){ 
+              alert("'||get_fn('파일 첨부는 3개까지 가능합니다..')||'") 
+              return false; 
+            } else { 
+              document.attachform.attachflag.value = "true"; 
+              var nIndexFileName = file.lastIndexOf("\\"); 
+ 
+              if (nIndexFileName > 0) 
+                file = file.substr(nIndexFileName + 1); 
+ 
+              optStr = new Option(file + "'||get_fn('첨부중입니다.')||'",file,true); 
+              document.attachform.lbFile.options[i] = optStr; 
+              thisForm.p_dml_gubun.value = "1"; 
+              thisForm.submit(); 
+            } 
+          } 
+        } else if (mode == "del") { 
+          var files = document.attachform.lbFile; 
+          var j = document.attachform.lbFile.length; 
+ 
+          if(j > 0){ 
+            if(files.selectedIndex < 0 || files.selectedIndex == null){ 
+              alert("DELATTACH"); 
+              return false; 
+            } 
+          } else { 
+            return false; 
+          } 
+          thisForm.p_dml_gubun.value = "2"; 
+          var files = document.attachform.lbFile; 
+          var i = document.attachform.lbFile.options.selectedIndex; 
+                  thisForm.p_full_file_name.value = files.options[i].value;
+                  thisForm.submit(); 
+        } else if (mode == "view") { 
+          var files = document.attachform.lbFile; 
+          var j = document.attachform.lbFile.length; 
+          var i = document.attachform.lbFile.selectedIndex; 
+          if(j > 0){ 
+            if(files.selectedIndex < 0 || files.selectedIndex == null){ 
+              alert("SEARCHFILE"); 
+              return false; 
+            } else { 
+              var select_text = files.options[i].value; 
+              if ( select_text != null ) { 
+                 var page = encodeURI("Edp_Download_k?p_file="+select_text); 
+                 newWnd2 = window.open(page,"window"); 
+              } 
+            } 
+          }  
+          else { 
+            return false; 
+          } 
+        } 
+        return true; 
+      } 
+      </script> 
+    </HEAD> 
+    <body bgcolor="white" marginwidth="0" marginheight="0" topmargin="0" leftmargin="0" > 
+      <form name="attachform" method="post" action="'||v_pkg||'.attachList2" id="attachform" enctype="multipart/form-data"> 
+      <input name="attachStr" id="attachStr" type="hidden" /> 
+      <input type="hidden" name="attachflag" value="false">       
+      <input type="hidden" name="p_seq" value="'||p_seq||'">       
+      <input type="hidden" name="p_dml_gubun" value="0"> 
+      <input type="hidden" name="p_full_file_name" value=""> 
+      <input type="hidden" name="p_session_id" value="'||nvl(p_session_id,1)||'"> 
+      <input type="hidden" name="p_sysdate" value="'||nvl(p_sysdate,1)||'"> 
+      <input type="hidden" name="p_flag" value="'||p_flag||'"> 
+      <input name="p_file_name" id="p_file_name" type="file" size="65" style="WIDTH:98%; BORDER-TOP-STYLE:groove; BORDER-RIGHT-STYLE:groove; BORDER-LEFT-STYLE:groove; BORDER-BOTTOM-STYLE:groove" /> 
+      <div id="filelist"> 
+      <select name="lbFile" size="4" id="lbFile" style="width: 90%; height: 70px;">'); 
+      if p_seq is not null then 
+         for recFile in curFile loop  
+             htp.p('<option value="'||recFile.rowkey||'">'||recFile.file_name||'</option>'); 
+         end loop; 
+      elsif p_seq is null then 
+         for recFile in curTmpFile(v_pkg, p_session_id, p_sysdate) loop 
+      SHOW_ALERT(2);
+             htp.p('<option value="'||recFile.rowkey||'">'||recFile.file_name||'</option>'); 
+         end loop; 
+      end if;       
+      htp.p('
+      </select> 
+        </div> 
+        <div id="filebtn"> 
+          <a href="#" onclick="checkFrom(''add'');" class="btn-attach buttons">'||get_fn('첨부')||'</a> 
+          <a href="#" onclick="checkFrom(''del'');" class="btn-delete buttons">'||get_fn('삭제')||'</a> 
+          <a href="#" onclick="checkFrom(''view'');" class="btn-view buttons">'||get_fn('보기')||'</a> 
+        </div> 
+      </form> 
+    </body> 
+  </HTML>'); 
+  EXCEPTION 
+     when others then 
+        show_err;
+  end attachList2;
+  
+  
+  
+END dbv_rc_qms_test;
